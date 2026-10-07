@@ -787,7 +787,9 @@ details.log li b{color:var(--ink); font-weight:500}
 
   form.addEventListener('submit', function(e){ e.preventDefault(); ask(); });
   q.addEventListener('keydown', function(e){
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); ask(); }
+    // Enter sends, Shift+Enter is a new line. Never send while a Korean (IME) syllable is still being composed.
+    if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229 || e.shiftKey) return;
+    e.preventDefault(); ask();
   });
   closeBtn.addEventListener('click', closePanel);
   document.addEventListener('keydown', function(e){

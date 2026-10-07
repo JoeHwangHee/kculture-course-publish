@@ -287,12 +287,12 @@ B1에서 다시 재지 않은 것과 B1 밖에서 잰 것
   - `app/agent/tests/test_agent_nim_client.py::test_from_env_switched_key_variable_missing_is_config_error`(바꾼 변수가 없으면 기본 변수로 돌아가지 않고 ConfigError)
   - `app/agent/tests/test_agent_nim_client.py::test_from_env_bad_key_variable_name_is_config_error`(허용 목록 밖 이름 8가지)
   - `app/agent/tests/test_agent_nim_client.py::test_requests_carry_a_named_user_agent`
-- 실제 vLLM 호출은 vLLM이 HTTP 401을 돌려 답을 받지 못했다. 기록된 경로는 샌드박스 → OpenShell(`vllm_chat` 허용) → Cloudflare 통과 → vLLM 401이다. 기록은 원인을 저장된 provider 키가 서버 키와 다른 것으로 보고, 팀장이 확인 중이라고 적었다 `[미확인: docs/tracking/status.md "막힌 것"]`.
+- 실제 vLLM 호출: 처음에는 vLLM의 키 검사에서 HTTP 401이었다(응답 본문이 vLLM의 것이라 터널은 통과). 팀장이 provider 키를 바로잡은 뒤 가벼운 질문(run `20261007T074558Z-3db8`, `ANSWERED_LIGHT`)과 시연 문장(run `20261007T075459Z-27fb`, 실시간 화면 경유, 70초, 코스 2곳·`PUBLISH_PENDING_APPROVAL`)이 vLLM으로 끝까지 돌았다. OpenShell 로그에 `policy:vllm_chat` ALLOWED(OPA·L7) 줄이 남았다 `[실행 기록: app/sandbox/violation_tests.md C3, README 8절]`.
 - 결과표(7절)의 수치는 모두 NVIDIA API 카탈로그 모델 `nvidia/nemotron-3-super-120b-a12b`로 잰 값이다 `[사실: README.md 9절]`. vLLM 연결(16:1x)은 기능 동결(15:5x) 뒤에 더한 것이다 `[사실: 결정 기록 15:5x·16:1x 줄]`.
-- 결정 기록의 두 줄: 14:3x 줄은 "NIM은 Brev에 띄운 것을 쓴다(주소·모델·키 여부는 팀장이 확인, 그 전까지는 지금 NIM 주소)"이고, 16:1x 줄은 "팀의 Brev vLLM도 쓸 수 있게 한다"이다. 지금 코드의 기본값은 그대로 NVIDIA API 카탈로그이고, vLLM은 환경변수로 고르는 길이다 `[사실: app/agent/nim_client.py 39~40행, docs/contracts.md 설계 4.9, docs/tracking/status.md "막힌 것"]`. 16:1x 줄이 14:3x 줄을 대신하는지는 기록에 없다 `[미확인]`.
+- 결정 기록의 두 줄: 14:3x 줄은 "NIM은 Brev에 띄운 것을 쓴다(주소·모델·키 여부는 팀장이 확인, 그 전까지는 지금 NIM 주소)"이고, 16:1x 줄은 "팀의 Brev vLLM도 쓸 수 있게 한다"이다. 지금 코드의 기본값은 그대로 NVIDIA API 카탈로그이고, vLLM은 환경변수로 고르는 길이다 `[사실: app/agent/nim_client.py 39~40행, docs/contracts.md 설계 4.9]`. 16:1x 줄이 14:3x 줄을 대신하는지는 기록에 없다 `[미확인]`.
 
 **한계**
-- vLLM이 답한 실행이 없으므로, vLLM으로 시연 문장이나 평가를 돌린 기록도 없다 `[미확인]`.
+- vLLM으로는 시연 문장 1회와 가벼운 질문 1회만 돌렸다. 평가 사례(7절 결과표)는 vLLM으로 돌리지 않았다.
 - `vllm_chat` 블록을 막는 쪽 위반 시험(다른 실행 파일, 다른 경로)은 기록이 없다 `[미확인]`(1.2절).
 - demo.sh의 값 넘기기와 거부를 확인하는 시험은 저장소에 없다 `[추론: app 아래 시험 파일에서 demo.sh를 찾지 못함]`.
 - 새 엔드포인트가 443/TLS가 아니면 정책 블록 모양이 달라질 수 있다 `[추론]`.

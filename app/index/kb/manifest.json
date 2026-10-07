@@ -1,6 +1,6 @@
 {
   "format_version": 3,
-  "created_at": "2026-10-07T08:02:09+00:00",
+  "created_at": "2026-10-07T08:11:47+00:00",
   "embedder": {
     "type": "local",
     "model": "bge-m3",

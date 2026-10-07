@@ -86,7 +86,7 @@ env -u NVIDIA_API_KEY -u ANTHROPIC_API_KEY -u GITHUB_TOKEN uv run pytest
 
 ### 2.2 커밋된 지식 색인 검색
 
-색인은 이미 `app/index/kb/`에 커밋돼 있다(형식 판 3, 문서 518, 청크 553). 검색은 Kiwi BM25(한국어 형태소 분석 기반 단어 검색)와 bge-m3 밀집 임베딩(문장 뜻 기반 검색)의 결과를 RRF(순위 기반 결합)로 합친다.
+색인은 이미 `app/index/kb/`에 커밋돼 있다(형식 판 3). 평가·시연에 쓴 전체 자료 판은 문서 518, 청크 553이고, 제출용 공개 저장소의 색인은 이용 조건을 확인하지 못한 자료를 뺀 판(문서 399, 청크 430)이다(README 4절). 검색은 Kiwi BM25(한국어 형태소 분석 기반 단어 검색)와 bge-m3 밀집 임베딩(문장 뜻 기반 검색)의 결과를 RRF(순위 기반 결합)로 합친다.
 
 어디서: `app/`(1절의 `uv sync --extra local-embed`를 먼저 한다)
 ```
@@ -363,7 +363,7 @@ sh app/sandbox/demo.sh logs [<기간, 예: 10m>]
 - `NIM_BASE_URL`·`NIM_MODEL`은 루프가 쓰는 Nemotron 클라이언트(`app/loop/nemotron.py`가 `NimClient.from_env`를 부름)에도 그대로 적용된다.
 - `NIM_API_KEY_ENV`: 키가 든 환경변수의 이름을 고른다. 기본은 `NVIDIA_API_KEY`이고, 받는 값은 `NVIDIA_API_KEY`·`VLLM_API_KEY`(팀이 Brev GPU에 띄운 vLLM(OpenAI 호환 추론 서버)용) 둘뿐이다. 그 밖의 이름은 설정 오류(ConfigError)로 멈춘다. 다른 provider의 자리표시 값(예: `GITHUB_TOKEN`)이 모델 요청에 실리지 않게 하려는 것이다. 근거: `app/agent/nim_client.py` 6~7행(머리 주석), 33~35행(`API_KEY_ENV_NAME_ENV`, `ALLOWED_KEY_ENVS`), 147~152행(`from_env`의 검사).
 - `demo.sh`는 호스트에 설정된 세 값(`NIM_BASE_URL`, `NIM_MODEL`, `NIM_API_KEY_ENV`)을 `--env`로 샌드박스에 넘긴다. 설정하지 않은 값은 넘기지 않는다. 공백·따옴표·glob 문자(`*`, `?`, `[`)·`$`·백틱이 든 값은 종료 2로 거부한다(`app/sandbox/demo.sh` 41~49행).
-- 팀 vLLM으로 바꾸는 명령(provider 프로필 `app/sandbox/providers/kculture-vllm-chat.yaml` 가져오기, provider `kculture-vllm` 만들기, 샌드박스를 만들 때 `--provider kculture-vllm` 더하기, 세 값을 주고 `demo.sh course` 부르기)은 README 3절 "선택: 팀의 vLLM으로 모델 바꾸기"에 있다. 팀 vLLM에서 답을 받은 기록은 없다(vLLM이 HTTP 401을 돌려줌) `[미확인: docs/tracking/status.md "막힌 것"]`. 기대 결과는 적지 않는다.
+- 팀 vLLM으로 바꾸는 명령(provider 프로필 `app/sandbox/providers/kculture-vllm-chat.yaml` 가져오기, provider `kculture-vllm` 만들기, 샌드박스를 만들 때 `--provider kculture-vllm` 더하기, 세 값을 주고 `demo.sh course` 부르기)은 README 3절 "선택: 팀의 vLLM으로 모델 바꾸기"에 있다. 팀 vLLM으로 시연 문장과 가벼운 질문을 한 번씩 끝까지 돌렸다(처음에는 vLLM 키 검사에서 401이었고, provider 키를 바로잡은 뒤 통과) `[실행 기록: app/sandbox/violation_tests.md C3, README 8절]`. 기대 결과: 가벼운 질문은 `ANSWERED_LIGHT`, 시연 문장은 코스 저장 뒤 `PUBLISH_PENDING_APPROVAL`(승인 전).
 - 샌드박스 정책(두 파일 모두)은 모델 쪽으로 `nim_chat`(`integrate.api.nvidia.com:443`)과 `vllm_chat`(`nemotron-ye5klfyey.gobrev.dev:443`)의 `POST /v1/chat/completions`만 연다. 그 밖의 엔드포인트를 쓰면 정책에도 그 호스트를 더해야 한다 `[추론: app/sandbox/policy.yaml 머리 주석 "Everything else is denied"]`.
 
 근거: `app/agent/nim_client.py`(머리 주석, 상수, `from_env`), `app/sandbox/demo.sh`(41~49행), `app/sandbox/policy.yaml`(머리 주석, `nim_chat`·`vllm_chat`), `app/sandbox/providers/kculture-vllm-chat.yaml`, README 3절
@@ -374,6 +374,8 @@ sh app/sandbox/demo.sh logs [<기간, 예: 10m>]
 ```
 python3 app/web/server.py
 ```
-- 127.0.0.1에서 뜬다고 전달받았다. `app/web/`은 지금 main에 없어 동작·포트·기대 결과, 시스템 `python3`(macOS 기본 3.9.6)로 도는지를 확인하지 못했다 `[미확인]`.
+- 기대 결과: `http://127.0.0.1:8787/ (샌드박스 kculture)`가 찍히고, 브라우저로 그 주소를 열면 질문 칸 하나가 보인다. 질문을 보내면(보내기 버튼, Enter. 줄바꿈은 Shift+Enter) 오른쪽 영역이 열리고 경과 시간이 오르다가 답이 나온다. 127.0.0.1에만 열리고 한 번에 한 질문만 돈다.
+- 옵션: `--port 8787`, `--sandbox kculture`. 호스트에 `PUBLISH_REPO`·`NIM_BASE_URL`·`NIM_MODEL`·`NIM_API_KEY_ENV`·`KCULTURE_APPROVAL_WAIT_S`가 있으면 그 다섯 이름만 샌드박스로 넘긴다(키 값은 넘기지 않음).
+- 2026-10-07 확인: macOS 기본 `python3`(3.9.6)으로 띄워, 시연 문장(팀 vLLM, run `20261007T075459Z-27fb`, 70초, `PUBLISH_PENDING_APPROVAL`)과 가벼운 질문(run `20261007T075620Z-214c`, 4초)을 화면으로 돌렸다 `[실행 기록: README 5절·8절]`.
 
-근거: 전달받은 내용(저장소에 없음)
+근거: `app/web/server.py`, `app/web/index.html`, `app/web/tests/test_server.py`, README 5절
