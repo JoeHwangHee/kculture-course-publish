@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>배경지 코스 에이전트</title>
+<meta name="description" content="K-콘텐츠 배경지 코스 에이전트. 질문을 OpenShell 샌드박스 kculture 안의 에이전트가 실시간으로 처리한다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg: oklch(0.982 0.005 80);
+  --surface: oklch(1 0 0);
+  --sunk: oklch(0.962 0.006 80);
+  --ink: oklch(0.21 0.012 60);
+  --muted: oklch(0.46 0.012 60);
+  --faint: oklch(0.6 0.01 60);
+  --line: oklch(0.89 0.008 80);
+  --accent: oklch(0.64 0.19 45);
+  --accent-ink: oklch(0.5 0.16 42);
+  --accent-bg: oklch(0.955 0.04 60);
+  --deny: oklch(0.55 0.2 27);
+  --allow: oklch(0.52 0.13 155);
+  --gA: oklch(0.45 0.115 155); --gA-ink: oklch(0.99 0 0);
+  --gB: oklch(0.47 0.11 250); --gB-ink: oklch(0.99 0 0);
+  --gC: oklch(0.8 0.12 80); --gC-ink: oklch(0.25 0.04 70);
+  --gD: oklch(0.88 0.01 60); --gD-ink: oklch(0.3 0.01 60);
+  --notice-bg: oklch(0.21 0.012 60);
+  --notice-ink: oklch(0.97 0.005 80);
+  --shadow: 0 1px 2px oklch(0.2 0.01 60 / 0.05), 0 12px 32px oklch(0.2 0.01 60 / 0.07);
+  --ease: cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg: oklch(0.17 0.008 60);
+    --surface: oklch(0.215 0.009 60);
+    --sunk: oklch(0.19 0.008 60);
+    --ink: oklch(0.95 0.006 80);
+    --muted: oklch(0.74 0.01 80);
+    --faint: oklch(0.6 0.01 80);
+    --line: oklch(0.33 0.01 60);
+    --accent: oklch(0.74 0.16 52);
+    --accent-ink: oklch(0.8 0.14 55);
+    --accent-bg: oklch(0.3 0.06 50);
+    --deny: oklch(0.68 0.19 27);
+    --allow: oklch(0.72 0.14 155);
+    --gA: oklch(0.72 0.14 155); --gA-ink: oklch(0.16 0.03 155);
+    --gB: oklch(0.72 0.11 250); --gB-ink: oklch(0.16 0.03 250);
+    --gC: oklch(0.8 0.12 80); --gC-ink: oklch(0.2 0.04 70);
+    --gD: oklch(0.4 0.01 60); --gD-ink: oklch(0.92 0.01 60);
+    --notice-bg: oklch(0.93 0.03 70);
+    --notice-ink: oklch(0.2 0.012 60);
+    --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 12px 32px oklch(0 0 0 / 0.28);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg: oklch(0.17 0.008 60);
+  --surface: oklch(0.215 0.009 60);
+  --sunk: oklch(0.19 0.008 60);
+  --ink: oklch(0.95 0.006 80);
+  --muted: oklch(0.74 0.01 80);
+  --faint: oklch(0.6 0.01 80);
+  --line: oklch(0.33 0.01 60);
+  --accent: oklch(0.74 0.16 52);
+  --accent-ink: oklch(0.8 0.14 55);
+  --accent-bg: oklch(0.3 0.06 50);
+  --deny: oklch(0.68 0.19 27);
+  --allow: oklch(0.72 0.14 155);
+  --gA: oklch(0.72 0.14 155); --gA-ink: oklch(0.16 0.03 155);
+  --gB: oklch(0.72 0.11 250); --gB-ink: oklch(0.16 0.03 250);
+  --gC: oklch(0.8 0.12 80); --gC-ink: oklch(0.2 0.04 70);
+  --gD: oklch(0.4 0.01 60); --gD-ink: oklch(0.92 0.01 60);
+  --notice-bg: oklch(0.93 0.03 70);
+  --notice-ink: oklch(0.2 0.012 60);
+  --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 12px 32px oklch(0 0 0 / 0.28);
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
+  background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans KR", system-ui, sans-serif;
+  font-size:16px; line-height:1.6;
+  word-break:keep-all; overflow-wrap:anywhere;
+}
+.mono{font-family:"IBM Plex Mono", ui-monospace, monospace}
+p{margin:0}
+h1,h2,h3{margin:0; line-height:1.3; text-wrap:balance}
+a{color:var(--accent-ink); text-underline-offset:3px}
+a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:8px}
+
+/* 실시간 표시 띠 */
+.notice{flex:none; background:var(--notice-bg); color:var(--notice-ink); font-size:14px; display:flex; gap:12px; align-items:baseline; padding:11px 24px}
+.tag{flex:none; font-weight:700; background:var(--accent); color:oklch(0.99 0 0); padding:1px 9px; border-radius:4px; font-size:13px}
+.notice .mono{font-size:13px}
+
+/* 앱: 왼쪽 질문 + 오른쪽 답변 */
+.app{flex:1; display:flex; min-height:0; position:relative}
+.left{position:relative; flex:none; width:100%; display:flex; align-items:center; justify-content:center; padding:84px 40px 64px; container-type:inline-size; transition:width .35s var(--ease)}
+.app.open .left{width:40%}
+.theme{position:absolute; top:16px; right:16px; font:inherit; font-size:13px; color:var(--muted); background:transparent; border:1px solid var(--line); border-radius:999px; padding:0 14px; min-height:44px; cursor:pointer; white-space:nowrap}
+.theme:hover{background:var(--sunk); color:var(--ink)}
+.q{width:100%; max-width:760px}
+.q label{display:block; font-size:clamp(26px, 5.6cqi, 48px); font-weight:700; letter-spacing:-.03em; line-height:1.22; margin-bottom:24px; text-wrap:balance}
+.composer{background:var(--surface); border:1.5px solid var(--ink); border-radius:22px; padding:20px 20px 16px 24px; box-shadow:var(--shadow)}
+.composer:focus-within{box-shadow:0 0 0 4px var(--accent-bg), var(--shadow); border-color:var(--accent)}
+.composer textarea{display:block; width:100%; border:0; background:transparent; color:var(--ink); resize:none; outline:none; font:inherit; font-size:clamp(19px, 3.4cqi, 26px); font-weight:500; line-height:1.45; letter-spacing:-.01em; min-height:2.9em}
+.composer textarea::placeholder{color:var(--faint)}
+.c-row{display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:10px}
+.count{font-size:13px; color:var(--faint)}
+.send{font:inherit; font-size:17px; font-weight:700; color:var(--bg); background:var(--ink); border:0; border-radius:999px; padding:0 30px; min-height:52px; cursor:pointer}
+.send:hover{background:var(--accent); color:oklch(0.99 0 0)}
+.send:disabled{opacity:.45; cursor:not-allowed; background:var(--ink); color:var(--bg)}
+.sent{display:flex; flex-wrap:wrap; gap:4px 10px; align-items:baseline; margin-top:16px; font-size:14px; color:var(--muted)}
+.sent b{font-weight:500; color:var(--ink)}
+.form-msg{margin-top:12px; font-size:14px; color:var(--deny); font-weight:500}
+
+.panel{position:relative; flex:none; width:0; overflow:hidden; visibility:hidden; background:var(--surface); border-left:1px solid var(--line);
+  transition:width .35s var(--ease), visibility 0s linear .35s}
+.app.open .panel{width:60%; visibility:visible; transition:width .35s var(--ease), visibility 0s}
+.p-scroll{width:60vw; height:100%; overflow-y:auto; overscroll-behavior:contain}
+.p-head{position:sticky; top:0; z-index:2; display:flex; gap:14px; align-items:flex-start; justify-content:space-between; background:var(--surface); border-bottom:1px solid var(--line); padding:16px 20px 14px 36px}
+.p-note{display:flex; flex-wrap:wrap; gap:4px 10px; align-items:baseline; font-size:14px; color:var(--muted); padding-top:9px}
+.pill{font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--accent-bg); border:1px solid var(--accent); border-radius:999px; padding:1px 10px; white-space:nowrap}
+.p-note b{font-weight:500; color:var(--ink)}
+.x{flex:none; width:44px; height:44px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--ink); font:inherit; font-size:24px; line-height:1; cursor:pointer; display:grid; place-items:center}
+.x:hover{background:var(--sunk)}
+.p-body{max-width:780px; padding:26px 36px 56px}
+.diff{font-size:14px; color:var(--accent-ink); background:var(--accent-bg); border-radius:10px; padding:8px 12px; margin-bottom:16px}
+.a-req{font-size:13px; color:var(--muted)}
+.a-sum{margin-top:10px; font-size:clamp(26px, 2.6vw, 34px); font-weight:700; letter-spacing:-.025em; line-height:1.3}
+.a-sum .of{display:inline-block; font-size:.54em; font-weight:400; color:var(--muted); letter-spacing:0}
+.a-work{font-size:15px; color:var(--muted); margin-top:4px}
+.a-text{margin-top:12px; font-size:18px; line-height:1.7; white-space:pre-wrap}
+.ev{display:inline-block; margin-top:12px; font-size:13px; font-weight:700; color:var(--muted); border:1px dashed var(--faint); border-radius:999px; padding:1px 10px}
+
+/* 실행 중 */
+.running{display:flex; gap:14px; align-items:center; margin-top:8px; font-size:17px}
+.spin{flex:none; width:22px; height:22px; border-radius:999px; border:3px solid var(--line); border-top-color:var(--accent); animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.alert{margin-top:8px; font-size:16px; border-left:4px solid var(--deny); background:var(--sunk); padding:12px 16px; border-radius:6px}
+.alert b{color:var(--deny)}
+
+.place{margin-top:28px; padding-top:24px; border-top:1px solid var(--line)}
+.pl-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+.p-ord{font-family:"IBM Plex Mono", monospace; font-size:14px; font-weight:500; width:28px; height:28px; border-radius:8px; display:inline-grid; place-items:center; background:var(--ink); color:var(--bg); align-self:center}
+.p-name{font-size:clamp(22px, 2.2vw, 26px); font-weight:700; letter-spacing:-.02em}
+.p-time{flex-basis:100%; font-size:15px; color:var(--muted); padding-left:40px}
+.p-time b{color:var(--ink); font-weight:500}
+.p-scene{flex-basis:100%; font-size:15px; padding-left:40px}
+.p-scene span{color:var(--muted)}
+.est{font-size:12px; border:1px dashed var(--faint); border-radius:999px; padding:0 8px; margin-left:4px; white-space:nowrap}
+
+.origin{display:grid; grid-template-columns:64px minmax(0,1fr); gap:18px; align-items:start; margin-top:20px}
+.badge{width:64px; height:64px; border-radius:16px; display:grid; place-content:center; text-align:center; line-height:1}
+.badge b{font-family:"IBM Plex Mono", monospace; font-size:30px; font-weight:500}
+.badge small{display:block; font-size:11px; font-weight:500; margin-top:5px}
+.gA{background:var(--gA); color:var(--gA-ink)}
+.gB{background:var(--gB); color:var(--gB-ink)}
+.gC{background:var(--gC); color:var(--gC-ink)}
+.gD{background:var(--gD); color:var(--gD-ink)}
+.gN{background:transparent; color:var(--muted); border:2px dashed var(--faint)}
+.gN b{font-size:22px}
+.o-name{font-size:17px; font-weight:700}
+.o-name span{font-size:13px; font-weight:400; color:var(--muted); margin-left:6px}
+.o-sum{font-size:16px; margin-top:2px}
+.src{font-size:12.5px; color:var(--faint); margin-top:4px}
+
+.op{display:flex; flex-wrap:wrap; gap:4px 10px; align-items:baseline; margin-top:20px; font-size:15px; padding-left:82px}
+.st{font-size:13px; font-weight:700; border-radius:999px; padding:2px 11px; white-space:nowrap}
+.st.fixed{background:var(--ink); color:var(--bg)}
+.st.check{background:var(--accent-bg); color:var(--accent-ink); border:1.5px solid var(--accent)}
+.st.unk{background:transparent; color:var(--muted); border:1.5px dashed var(--faint)}
+.op .sub{color:var(--muted)}
+.minor{margin-top:12px; padding-left:82px; font-size:14px; color:var(--muted)}
+.minor b{color:var(--ink); font-weight:500}
+.minor ul{margin:2px 0 0; padding-left:18px}
+
+.facts{margin:30px 0 0; padding-top:22px; border-top:1px solid var(--line); display:grid; gap:14px}
+.facts div{display:grid; grid-template-columns:150px minmax(0,1fr); gap:12px; align-items:baseline}
+.facts dt{font-size:14px; color:var(--muted)}
+.facts dd{margin:0; font-size:15px}
+.facts dd ul{margin:0; padding-left:18px}
+.no{color:var(--deny); font-weight:700}
+.hu{color:var(--accent-ink); font-weight:700}
+.ok{color:var(--allow); font-weight:700}
+.ids{font-family:"IBM Plex Mono", monospace; font-size:13.5px; color:var(--muted)}
+.legend{margin-top:22px; font-size:12.5px; color:var(--faint)}
+
+details.log{margin-top:18px; border-top:1px solid var(--line); padding-top:4px}
+details.log > summary{cursor:pointer; list-style:none; min-height:44px; display:flex; align-items:center; gap:8px; font-size:14px; font-weight:500; color:var(--muted)}
+details.log > summary::-webkit-details-marker{display:none}
+details.log > summary::before{content:"+"; font-family:"IBM Plex Mono", monospace; color:var(--accent-ink); width:12px}
+details.log[open] > summary::before{content:"\2212"}
+details.log ul{margin:2px 0 8px; padding-left:20px; display:grid; gap:4px; font-size:13.5px; color:var(--muted)}
+details.log li b{color:var(--ink); font-weight:500}
+
+/* 데스크톱: 화면 높이에 맞추고 영역마다 스크롤 */
+@media (min-width: 761px){
+  body{height:100vh; height:100dvh; overflow:hidden}
+  .left{overflow-y:auto}
+}
+
+/* 휴대폰: 아래에서 올라오는 전체 화면 시트 */
+@media (max-width: 760px){
+  .notice{flex-direction:column; gap:6px; padding:11px 16px}
+  .left, .app.open .left{width:100%; padding:72px 16px 40px; align-items:flex-start}
+  .q label{font-size:clamp(26px, 8cqi, 34px)}
+  .composer{padding:16px 16px 14px 18px; border-radius:18px}
+  .c-row{display:block}
+  .count{display:block; text-align:right; margin-bottom:8px}
+  .send{width:100%}
+  .panel{position:fixed; inset:0; z-index:30; width:auto; border-left:0; transform:translateY(100%);
+    transition:transform .35s var(--ease), visibility 0s linear .35s}
+  .app.open .panel{width:auto; transform:none; transition:transform .35s var(--ease), visibility 0s}
+  .p-scroll{width:100%}
+  .p-head{padding:12px 12px 12px 16px}
+  .p-note{font-size:13px; padding-top:10px}
+  .p-body{padding:20px 16px 40px}
+  .origin{grid-template-columns:52px minmax(0,1fr); gap:14px}
+  .badge{width:52px; height:52px; border-radius:13px}
+  .badge b{font-size:24px}
+  .badge small{font-size:10px; margin-top:4px}
+  .p-time, .p-scene, .op, .minor{padding-left:0}
+  .facts div{grid-template-columns:1fr; gap:2px}
+  body.sheet-open{overflow:hidden}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .left, .panel, .app.open .left, .app.open .panel{transition:none !important}
+  .spin{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="notice" role="note">
+  <span class="tag">실시간</span>
+  <p>실시간 — 질문을 OpenShell 샌드박스 kculture 안의 에이전트가 처리</p>
+</div>
+
+<div class="app" id="app">
+  <section class="left" aria-label="질문">
+    <button class="theme" id="theme" type="button">어둡게 보기</button>
+    <form class="q" id="ask-form" autocomplete="off" novalidate>
+      <label for="q">보고 온 작품과 남은 시간을 말해 주세요</label>
+      <div class="composer">
+        <textarea id="q" name="q" rows="2" maxlength="500" placeholder="예: 케데헌 보고 왔어요. 오후 3시간, 혜화에서 시작할게요"></textarea>
+        <div class="c-row"><span class="count" id="count">0/500</span><button class="send" id="send" type="submit">보내기</button></div>
+      </div>
+      <p class="form-msg" id="form-msg" role="alert" hidden></p>
+      <p class="sent" id="sent" hidden><span>보낸 질문</span><b id="sent-text"></b></p>
+    </form>
+  </section>
+
+  <aside class="panel" id="panel" aria-label="답변" aria-hidden="true" inert>
+    <div class="p-scroll" id="p-scroll">
+      <div class="p-head">
+        <p class="p-note" aria-live="polite"><span class="pill">실시간</span><span id="head-text">샌드박스 kculture에서 실행 중</span><b class="mono" id="head-time"></b></p>
+        <button class="x" id="close" type="button" aria-label="답변 닫기">×</button>
+      </div>
+      <div class="p-body" id="p-body"></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var root = document.documentElement;
+  var hash = '';
+  try { hash = location.hash || ''; } catch (e) {}
+  if (hash.indexOf('dark') > -1) root.setAttribute('data-theme', 'dark');
+  else if (hash.indexOf('light') > -1) root.setAttribute('data-theme', 'light');
+
+  var themeBtn = document.getElementById('theme');
+  function effective(){
+    var t = root.getAttribute('data-theme');
+    if (t) return t;
+    try { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch (e) { return 'light'; }
+  }
+  function label(){ themeBtn.textContent = effective() === 'dark' ? '밝게 보기' : '어둡게 보기'; }
+  themeBtn.addEventListener('click', function(){
+    root.setAttribute('data-theme', effective() === 'dark' ? 'light' : 'dark');
+    label();
+  });
+  label();
+
+  var app = document.getElementById('app');
+  var panel = document.getElementById('panel');
+  var scroller = document.getElementById('p-scroll');
+  var form = document.getElementById('ask-form');
+  var q = document.getElementById('q');
+  var sendBtn = document.getElementById('send');
+  var count = document.getElementById('count');
+  var formMsg = document.getElementById('form-msg');
+  var sent = document.getElementById('sent');
+  var sentText = document.getElementById('sent-text');
+  var closeBtn = document.getElementById('close');
+  var body = document.getElementById('p-body');
+  var headText = document.getElementById('head-text');
+  var headTime = document.getElementById('head-time');
+
+  var MAX_LEN = 500;
+  var POLL_MS = 1000;
+  var MAX_NET_ERRORS = 5;
+  var busy = false;
+  var pollTimer = null;
+
+  // ---------- 작은 도구: 값은 모두 textContent로 넣는다 ----------
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = String(text);
+    return n;
+  }
+  function add(parent, child){ parent.appendChild(child); return child; }
+  function isNum(v){ return typeof v === 'number' && isFinite(v); }
+  function has(v){ return v !== undefined && v !== null && v !== ''; }
+  function arr(v){ return Array.isArray(v) ? v : []; }
+  function str(v){
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if (Array.isArray(v)) return v.map(str).filter(function(s){ return s !== ''; }).join(' · ');
+    try { return JSON.stringify(v); } catch (e) { return ''; }
+  }
+  function norm(s){ return s.replace(/\s+/g, ' ').trim(); }
+  function safeLink(url, text){
+    // href는 https://github.com/ 으로 시작할 때만 넣는다. 그 밖에는 글자만.
+    if (typeof url === 'string' && url.indexOf('https://github.com/') === 0) {
+      var a = el('a', null, text || url);
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      return a;
+    }
+    return el('span', 'ids', has(url) ? str(url) : (text || ''));
+  }
+  function fmtSec(s){
+    if (!isNum(s)) return '';
+    s = Math.max(0, Math.round(s));
+    if (s < 60) return s + '초';
+    return Math.floor(s / 60) + '분 ' + (s % 60) + '초';
+  }
+
+  // ---------- 패널 열고 닫기 ----------
+  function openPanel(){
+    app.classList.add('open');
+    panel.removeAttribute('inert');
+    panel.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('sheet-open');
+    scroller.scrollTop = 0;
+    try { closeBtn.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function closePanel(){
+    app.classList.remove('open');
+    panel.setAttribute('inert', '');
+    panel.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('sheet-open');
+    try { q.focus({ preventScroll: true }); } catch (e) {}
+  }
+
+  function setBusy(b){
+    busy = b;
+    sendBtn.disabled = b;
+    sendBtn.textContent = b ? '처리 중…' : '보내기';
+  }
+  function showFormMsg(text){
+    formMsg.textContent = text;
+    formMsg.hidden = !text;
+  }
+  function setHead(text, secs){
+    headText.textContent = text;
+    headTime.textContent = isNum(secs) ? fmtSec(secs) : '';
+  }
+  function clearBody(){ while (body.firstChild) body.removeChild(body.firstChild); }
+
+  function renderRunning(question, secs){
+    clearBody();
+    add(body, el('p', 'a-req', '질문 "' + question + '"'));
+    var r = add(body, el('div', 'running'));
+    add(r, el('span', 'spin'));
+    add(r, el('span', null, '샌드박스 kculture에서 실행 중' + (isNum(secs) ? ' · ' + fmtSec(secs) : '')));
+    add(body, el('p', 'legend', '요청의 무게 판단(Nemotron) → 계획 → 도구 실행 순서로 진행됩니다. 무거운 요청은 몇 분 걸릴 수 있습니다.'));
+  }
+  function renderError(question, text){
+    clearBody();
+    if (question) add(body, el('p', 'a-req', '질문 "' + question + '"'));
+    var a = add(body, el('p', 'alert'));
+    add(a, el('b', null, '실행 실패'));
+    add(a, document.createTextNode(' — ' + text));
+  }
+
+  // ---------- 결과 그리기 ----------
+  var GRADE_LABEL = { A: '공식', B: '학술·백과', C: '언론·관광', D: '비공식' };
+  var NAME_KIND = { current: '지금 이름', old: '옛 이름', in_work: '작품 속 이름', station: '역 이름' };
+  var MODE = { walk: '도보', transit: '대중교통', unknown: '이동 수단 모름' };
+  var OP_STATUS = {
+    CHOSEN: ['정해짐', 'fixed'],
+    NEEDS_ONSITE_CHECK: ['현장 확인 필요', 'check'],
+    UNKNOWN: ['확인 안 됨', 'unk']
+  };
+  var PUB_STATUS = {
+    PUBLISHED: ['게시됨', 'ok'],
+    PUBLISH_PENDING_APPROVAL: ['승인 대기(정책 승인 전 게시가 막힘)', 'hu'],
+    COURSE_SAVED: ['보내지 말라고 해서 저장만 함', null],
+    PUBLISH_FAILED: ['게시 실패', 'no']
+  };
+
+  function badge(grade){
+    var g = (typeof grade === 'string' && GRADE_LABEL[grade]) ? grade : null;
+    var b = el('span', 'badge ' + (g ? 'g' + g : 'gN'));
+    if (g) {
+      b.setAttribute('aria-label', '근거 등급 ' + g + ', ' + GRADE_LABEL[g]);
+      add(b, el('b', null, g));
+      add(b, el('small', null, GRADE_LABEL[g]));
+    } else {
+      b.setAttribute('aria-label', '근거 없음, 등급 없음');
+      add(b, el('b', null, '–'));
+      add(b, el('small', null, '근거 없음'));
+    }
+    return b;
+  }
+  function originBlock(o){
+    o = o || {};
+    var box = el('div', 'origin');
+    add(box, badge(o.grade));
+    var d = add(box, el('div'));
+    var n = add(d, el('p', 'o-name', has(o.name) ? str(o.name) : '이름 없음'));
+    if (has(o.name_kind)) add(n, el('span', null, NAME_KIND[o.name_kind] || str(o.name_kind)));
+    if (has(o.summary)) add(d, el('p', 'o-sum', str(o.summary)));
+    else if (!has(o.grade)) add(d, el('p', 'o-sum', '근거가 없어 유래를 말하지 않고, 등급도 주지 않음.'));
+    var ids = arr(o.source_ids);
+    var inputs = arr(o.input_paths);
+    if (ids.length) add(d, el('p', 'src', '출처: ' + ids.map(str).join(' · ')));
+    else if (inputs.length) add(d, el('p', 'src', '입력 파일: ' + inputs.map(str).join(' · ')));
+    return box;
+  }
+  function conflictsBlock(list){
+    list = arr(list);
+    if (!list.length) return null;
+    var box = el('div', 'minor');
+    add(box, el('b', null, '자료끼리 엇갈림'));
+    var ul = add(box, el('ul'));
+    list.forEach(function(c){
+      c = c || {};
+      var claims = arr(c.claims).map(function(cl){
+        cl = cl || {};
+        return (has(cl.grade) ? '[' + str(cl.grade) + '] ' : '[근거 없음] ') + str(cl.summary);
+      });
+      add(ul, el('li', null, str(c.name) + (claims.length ? ': ' + claims.join(' / ') : '')));
+    });
+    return box;
+  }
+  function listBlock(title, items){
+    items = arr(items);
+    if (!items.length) return null;
+    var box = el('div', 'minor');
+    add(box, el('b', null, title));
+    var ul = add(box, el('ul'));
+    items.forEach(function(it){ add(ul, el('li', null, str(it))); });
+    return box;
+  }
+  function fact(dl, term){
+    var row = add(dl, el('div'));
+    add(row, el('dt', null, term));
+    return add(row, el('dd'));
+  }
+  function ulInto(dd, items, fmt){
+    var ul = add(dd, el('ul'));
+    items.forEach(function(it){ add(ul, el('li', null, fmt(it))); });
+  }
+
+  function placeBlock(p, idx){
+    p = p || {};
+    var sec = el('section', 'place');
+    var head = add(sec, el('div', 'pl-head'));
+    add(head, el('span', 'p-ord', isNum(p.order) ? p.order : idx + 1));
+    var hid = 'pl-' + idx;
+    var h = add(head, el('h3', 'p-name', has(p.current_name) ? str(p.current_name) : str(p.place_id)));
+    h.id = hid;
+    sec.setAttribute('aria-labelledby', hid);
+
+    // 이동·도착·머묾
+    var t = add(head, el('p', 'p-time'));
+    var mode = MODE[p.travel_mode] || '이동';
+    if (isNum(p.travel_min_from_prev)) {
+      add(t, document.createTextNode((idx === 0 ? '출발점에서 ' : '앞 장소에서 ') + mode + ' ' + p.travel_min_from_prev + '분'));
+    } else {
+      add(t, document.createTextNode((idx === 0 ? '출발점에서 ' : '앞 장소에서 ') + '이동 시간 모름'));
+    }
+    if (p.travel_basis === 'estimate') add(t, el('span', 'est', '추정'));
+    if (isNum(p.arrive_min)) {
+      add(t, document.createTextNode(' · '));
+      add(t, el('b', null, p.arrive_min + '분'));
+      add(t, document.createTextNode(' 도착'));
+    }
+    if (isNum(p.stay_min)) {
+      add(t, document.createTextNode(' · '));
+      add(t, el('b', null, p.stay_min + '분'));
+      add(t, document.createTextNode(' 머묾'));
+    }
+    if (p.station && has(p.station.name)) {
+      add(t, document.createTextNode(' · ' + str(p.station.name) + (has(p.station.line) ? '(' + str(p.station.line) + ')' : '')));
+    }
+
+    // 작품 속 이름·장면
+    if (has(p.in_work_name) || has(p.scene)) {
+      var sc = add(head, el('p', 'p-scene'));
+      if (has(p.in_work_name)) {
+        add(sc, el('span', null, '작품 속 이름 '));
+        add(sc, document.createTextNode(str(p.in_work_name)));
+      }
+      if (has(p.scene)) {
+        if (has(p.in_work_name)) add(sc, document.createTextNode(' · '));
+        add(sc, el('span', null, '장면 '));
+        add(sc, document.createTextNode(str(p.scene)));
+      }
+    }
+
+    // 이름 유래
+    var origins = arr(p.origins);
+    if (origins.length) origins.forEach(function(o){ add(sec, originBlock(o)); });
+    else add(sec, el('p', 'minor', '이름 유래: 없음'));
+
+    var cf = conflictsBlock(p.conflicts);
+    if (cf) add(sec, cf);
+
+    // 운영 정보
+    var op = p.operating;
+    if (op && typeof op === 'object') {
+      var row = add(sec, el('p', 'op'));
+      var st = OP_STATUS[op.status] || [has(op.status) ? str(op.status) : '상태 없음', 'unk'];
+      add(row, el('span', 'st ' + st[1], st[0]));
+      if (has(op.hours)) add(row, el('span', null, str(op.hours)));
+      if (has(op.closed)) add(row, el('span', null, '휴무 ' + str(op.closed)));
+      if (has(op.as_of)) add(row, el('span', 'sub', str(op.as_of) + ' 기준'));
+      if (op.status === 'NEEDS_ONSITE_CHECK' && arr(op.candidates).length) {
+        add(row, el('span', 'sub', '후보 ' + arr(op.candidates).length + '개'));
+      }
+    } else {
+      add(sec, el('p', 'minor', '운영 정보: 없음'));
+    }
+
+    // 오래된 자료
+    var stale = arr(p.stale);
+    if (stale.length) {
+      add(sec, listBlock('오래된 자료', stale.map(function(s){
+        s = s || {};
+        return str(s.source_id) + (has(s.reason) ? ': ' + str(s.reason) : '');
+      })));
+    }
+    return sec;
+  }
+
+  function publishLine(dd, result){
+    var pub = result.publish;
+    var run = result.run || {};
+    var status = (pub && has(pub.status)) ? pub.status : run.status;
+    var m = PUB_STATUS[status];
+    if (!m) { dd.textContent = '없음'; return; }
+    add(dd, el('span', m[1], m[0]));
+    if (pub && has(pub.issue_url)) {
+      add(dd, document.createTextNode(' ('));
+      add(dd, safeLink(pub.issue_url, '게시된 이슈'));
+      add(dd, document.createTextNode(')'));
+    }
+    if (pub && arr(pub.attempts).length) {
+      var att = arr(pub.attempts);
+      var blocked = att.filter(function(a){ return a && a.result === 'BLOCKED_BY_POLICY'; }).length;
+      add(dd, el('span', 'ids', ' · 시도 ' + att.length + '회' + (blocked ? ', 정책 차단 ' + blocked + '회' : '')));
+    }
+  }
+
+  function renderCourse(result, c){
+    var goal = c.goal || {};
+    var places = arr(c.places);
+    var sum = add(body, el('h2', 'a-sum'));
+    add(sum, document.createTextNode(places.length + '곳 · ' + (isNum(c.total_min) ? '총 ' + c.total_min + '분' : '총 시간 계산 못 함') + ' '));
+    add(sum, el('span', 'of', isNum(goal.time_budget_min) ? '시간 예산 ' + goal.time_budget_min + '분' : '시간 예산 없음'));
+    var work = [];
+    if (has(goal.work)) work.push(str(goal.work) + ' 배경지 코스');
+    if (has(goal.start)) work.push(str(goal.start) + ' 출발');
+    if (work.length) add(body, el('p', 'a-work', work.join(' · ')));
+
+    if (!places.length) add(body, el('p', 'minor', '코스에 들어간 장소: 없음'));
+    places.forEach(function(p, i){ add(body, placeBlock(p, i)); });
+
+    var dl = add(body, el('dl', 'facts'));
+    publishLine(fact(dl, '게시'), result);
+    var ex = arr(c.excluded);
+    if (ex.length) {
+      ulInto(fact(dl, '뺀 곳'), ex, function(e){
+        e = e || {};
+        return str(e.place_id) + (has(e.reason) ? ' — ' + str(e.reason) : '');
+      });
+    }
+    if (arr(c.unknowns).length) ulInto(fact(dl, '모르는 것'), arr(c.unknowns), str);
+    if (arr(c.warnings).length) ulInto(fact(dl, '경고'), arr(c.warnings), str);
+
+    add(body, el('p', 'legend', '근거 등급: A 공식 · B 학술·백과 · C 언론·관광 안내·위키 · D 비공식. 등급은 코드가 계산하고 모델은 정하지 않는다. "추정"은 근거 없이 정한 이동 시간이다. 뺀 곳은 장소 ID 그대로.'));
+  }
+
+  function renderAnswer(result, a){
+    if (has(a.answer)) add(body, el('p', 'a-text', str(a.answer)));
+    else add(body, el('p', 'a-text', '답 문장: 없음'));
+    if (has(a.evidence_label)) add(body, el('span', 'ev', str(a.evidence_label)));
+
+    arr(a.origins).forEach(function(o){ add(body, originBlock(o)); });
+    var cf = conflictsBlock(a.conflicts);
+    if (cf) add(body, cf);
+
+    var dl = add(body, el('dl', 'facts'));
+    var rf = arr(a.read_files);
+    if (rf.length) {
+      var rful = add(fact(dl, '읽으려 한 파일'), el('ul'));
+      rf.forEach(function(f){
+        f = f || {};
+        var li = add(rful, el('li'));
+        if (f.kind === 'DENIED_BY_SANDBOX') {
+          add(li, el('span', 'no', '읽기 거부(샌드박스 차단)'));
+          add(li, document.createTextNode(' ' + str(f.path)));
+        } else {
+          li.textContent = str(f.path) + (has(f.kind) ? ' (' + str(f.kind) + ')' : '');
+        }
+      });
+    }
+    if (arr(a.unknowns).length) ulInto(fact(dl, '모르는 것'), arr(a.unknowns), str);
+    if (arr(a.warnings).length) ulInto(fact(dl, '경고'), arr(a.warnings), str);
+    if (!dl.firstChild) body.removeChild(dl);
+    if (arr(a.origins).length) {
+      add(body, el('p', 'legend', '근거 등급: A 공식 · B 학술·백과 · C 언론·관광 안내·위키 · D 비공식. 등급은 코드가 계산하고 모델은 정하지 않는다.'));
+    }
+  }
+
+  function runSeconds(run, elapsed){
+    if (run && has(run.started_at) && has(run.ended_at)) {
+      var a = Date.parse(run.started_at), b = Date.parse(run.ended_at);
+      if (isNum(a) && isNum(b) && b >= a) return (b - a) / 1000;
+    }
+    return isNum(elapsed) ? elapsed : null;
+  }
+
+  function renderResult(question, result, elapsed){
+    clearBody();
+    result = result || {};
+    var run = result.run || {};
+    var status = has(result.status) ? result.status : run.status;
+    add(body, el('p', 'a-req', '질문 "' + question + '"의 대답'));
+
+    if (status === 'UNAVAILABLE') {
+      var u = add(body, el('p', 'alert'));
+      add(u, el('b', null, '응답 불가'));
+      add(u, document.createTextNode(' — 요청의 무게를 판단하지 못해 답하지 않았습니다.'));
+    } else if (status === 'FAILED') {
+      var f = add(body, el('p', 'alert'));
+      add(f, el('b', null, '실행 실패'));
+      add(f, document.createTextNode(' — 계획·실행이 실패했거나 한도를 넘었습니다.'));
+      if (arr(run.limits_hit).length) add(body, listBlock('넘은 한도', run.limits_hit));
+    }
+
+    if (result.course && typeof result.course === 'object') renderCourse(result, result.course);
+    else if (result.answer && typeof result.answer === 'object') renderAnswer(result, result.answer);
+    else if (status !== 'UNAVAILABLE' && status !== 'FAILED') add(body, el('p', 'a-text', '코스·답 파일이 없습니다.'));
+
+    // 실행 기록(접힘)
+    var det = add(body, el('details', 'log'));
+    add(det, el('summary', null, '실행 기록'));
+    var ul = add(det, el('ul'));
+    function li(k, v){ var x = add(ul, el('li', null, k + ' ')); add(x, el('b', null, v)); }
+    li('run_id', has(result.run_id) ? str(result.run_id) : str(run.run_id) || '없음');
+    li('status', has(status) ? str(status) : '없음');
+    li('route', has(result.route) ? str(result.route) : str(run.route) || '없음');
+    var secs = runSeconds(run, elapsed);
+    li('걸린 시간', isNum(secs) ? fmtSec(secs) : '없음');
+    if (has(run.started_at) && has(run.ended_at)) li('실행 시각', str(run.started_at) + ' ~ ' + str(run.ended_at));
+  }
+
+  // ---------- 서버와 주고받기 ----------
+  function stopPoll(){ if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; } }
+
+  function poll(jobId, question, netErrors){
+    fetch('/api/jobs/' + encodeURIComponent(jobId), { cache: 'no-store' })
+      .then(function(res){
+        if (!res.ok) throw { http: res.status };
+        return res.json();
+      })
+      .then(function(j){
+        j = j || {};
+        var secs = isNum(j.elapsed_s) ? j.elapsed_s : null;
+        if (j.state === 'running') {
+          setHead('샌드박스 kculture에서 실행 중', secs);
+          renderRunning(question, secs);
+          pollTimer = setTimeout(function(){ poll(jobId, question, 0); }, POLL_MS);
+          return;
+        }
+        stopPoll();
+        setBusy(false);
+        if (j.state === 'done') {
+          setHead('완료 · 샌드박스 kculture', secs);
+          renderResult(question, j.result, secs);
+        } else {
+          setHead('실패 · 샌드박스 kculture', secs);
+          if (j.result) {
+            renderResult(question, j.result, secs);
+            if (has(j.error)) {
+              var al = el('p', 'alert');
+              add(al, el('b', null, '실행 실패'));
+              add(al, document.createTextNode(' — ' + str(j.error)));
+              body.insertBefore(al, body.children[1] || null);
+            }
+          } else renderError(question, has(j.error) ? str(j.error) : '알 수 없는 오류');
+        }
+        if (!app.classList.contains('open')) openPanel();
+        scroller.scrollTop = 0;
+      })
+      .catch(function(err){
+        if (err && err.http === 404) {
+          stopPoll(); setBusy(false);
+          setHead('작업을 찾지 못함', null);
+          renderError(question, '서버에 이 작업이 없습니다(서버가 다시 시작됐을 수 있음).');
+          return;
+        }
+        var n = (netErrors || 0) + 1;
+        if (n >= MAX_NET_ERRORS) {
+          stopPoll(); setBusy(false);
+          setHead('연결 끊김', null);
+          renderError(question, '서버에 연결하지 못했습니다. 잠시 뒤 다시 보내 주세요.');
+          return;
+        }
+        setHead('연결 재시도 중(' + n + '/' + MAX_NET_ERRORS + ')', null);
+        pollTimer = setTimeout(function(){ poll(jobId, question, n); }, POLL_MS);
+      });
+  }
+
+  function ask(){
+    if (busy) return;
+    var text = norm(q.value);
+    if (text.length < 1 || text.length > MAX_LEN) {
+      showFormMsg('질문은 1~' + MAX_LEN + '자로 써 주세요.');
+      return;
+    }
+    showFormMsg('');
+    setBusy(true);
+    sentText.textContent = text;
+    sent.hidden = false;
+    fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: text })
+    })
+      .then(function(res){
+        if (res.status === 409) { setBusy(false); showFormMsg('이미 다른 질문을 처리 중입니다. 끝난 뒤 다시 보내 주세요.'); return null; }
+        if (res.status === 400) {
+          setBusy(false);
+          return res.json().catch(function(){ return null; }).then(function(j){
+            var why = (j && typeof j.error === 'string' && j.error) ? ' (' + j.error + ')' : '';
+            showFormMsg('질문은 1~' + MAX_LEN + '자로 써 주세요.' + why);
+          });
+        }
+        if (!res.ok) { setBusy(false); showFormMsg('서버 오류(HTTP ' + res.status + '). 잠시 뒤 다시 보내 주세요.'); return null; }
+        return res.json().then(function(j){
+          if (!j || !has(j.job)) { setBusy(false); showFormMsg('서버 응답에 작업 번호가 없습니다.'); return; }
+          setHead('샌드박스 kculture에서 실행 중', 0);
+          renderRunning(text, 0);
+          openPanel();
+          stopPoll();
+          pollTimer = setTimeout(function(){ poll(String(j.job), text, 0); }, POLL_MS);
+        });
+      })
+      .catch(function(){
+        setBusy(false);
+        showFormMsg('서버에 연결하지 못했습니다. 네트워크를 확인해 주세요.');
+      });
+  }
+
+  function updateCount(){ count.textContent = q.value.length + '/' + MAX_LEN; }
+  q.addEventListener('input', function(){ updateCount(); if (!formMsg.hidden) showFormMsg(''); });
+  updateCount();
+
+  form.addEventListener('submit', function(e){ e.preventDefault(); ask(); });
+  q.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); ask(); }
+  });
+  closeBtn.addEventListener('click', closePanel);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && app.classList.contains('open')) closePanel();
+  });
+})();
+</script>
+</body>
+</html>

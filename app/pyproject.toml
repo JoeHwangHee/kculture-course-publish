@@ -1,0 +1,44 @@
+[project]
+name = "hackathon-app"
+version = "0.1.0"
+description = "Korean culture/history/travel source retrieval: Kiwi BM25 + embedding hybrid search and indexing"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy>=1.26",
+    "rank-bm25>=0.2.2",
+    "kiwipiepy>=0.20",
+]
+
+[project.optional-dependencies]
+# Local embedding model (sentence-transformers pulls in torch). Install with `uv sync --extra local-embed`.
+# torch is listed directly so that [tool.uv.sources] below applies to it (sources only cover direct deps).
+local-embed = [
+    "sentence-transformers>=3.0",
+    "torch>=2.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.uv]
+# Flat layout run from this folder (`python -m retrieval`); no package build needed.
+package = false
+
+# Linux: CPU-only torch from the PyTorch CPU index, so no CUDA `nvidia-*` wheels (GBs) are installed.
+# macOS: torch from PyPI as before (CPU/MPS build).
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["common/tests", "retrieval/tests", "agent/tests", "tools/tests", "loop/tests", "sandbox/tests", "web/tests"]
+addopts = "-ra --import-mode=importlib"

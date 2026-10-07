@@ -1,0 +1,26 @@
+# 비밀값(커밋하지 않음). 키 원본은 폴더 루트의 .env에만 둔다
+.env
+.env.*
+!.env.example
+
+# 로컬 환경과 실행 출력(커밋하지 않음)
+.venv/
+__pycache__/
+*.pyc
+outputs/
+.DS_Store
+
+# 개발 환경에 설치한 공식 스킬과 로컬 설정(skills CLI·Claude Code가 만드는 파일, 커밋하지 않음)
+/skills-lock.json
+/.claude/skills/
+/.claude/settings.local.json
+/.agents/
+
+# 작업 설계·실행 도구의 로컬 작업 공간(작업 문서, 작업용 worktree, 백업. 커밋하지 않음)
+.dryforge/
+
+# 하위 오케스트레이터 작업 공간(트랙별 worktree와 작업기록 폴더. scripts/orch.py가 만든다. 커밋하지 않음)
+app/.orch/
+
+# 서브에이전트 작업 사본(Claude Code가 만드는 worktree, 커밋하지 않음)
+/.claude/worktrees/

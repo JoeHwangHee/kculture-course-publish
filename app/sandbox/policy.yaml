@@ -1,0 +1,87 @@
+# K-Culture agent OpenShell sandbox policy (OpenShell 0.0.116).
+#
+# Two files, identical except for one network block at the end:
+#   app/sandbox/policy.yaml                    default. No GitHub rule, so OpenShell denies every publish attempt.
+#   app/sandbox/policy-publish-approved.yaml   default + block github_issue:
+#                                              api.github.com:443 POST /repos/JoeHwangHee/kculture-course-publish/issues
+# Approval is a human act outside the agent, on the running sandbox (never recreated):
+#   approve  openshell policy set kculture --policy app/sandbox/policy-publish-approved.yaml --wait
+#   revoke   openshell policy set kculture --policy app/sandbox/policy.yaml --wait
+# Every set leaves a revision in `openshell policy list kculture` (audit trail). Approval lasts for one demo
+# session and is revoked right after it; while open, any run's publish passes (accepted risk).
+#
+# Deny by default; each opening below was added one at a time, with its reason.
+#   read_only  /usr /lib /proc /dev/urandom /etc   runtime needs (loader, CA certs, randomness). Nothing secret.
+#   read_only  /opt/kculture                       app code, Python, .venv and the prebuilt knowledge index
+#                                                  (/opt/kculture/index). The agent must not modify its own code or index.
+#   read_only  /opt/models                         embedding weights. Loaded offline; no model download path is open.
+#   read_only  /hackathon/input                    reference material. Read, never altered.
+#   read_only  /var/log                            OpenShell appends it on create; listed so the live policy matches.
+#   read_write /hackathon/output                   the only result destination (run folders, trace.jsonl).
+#   read_write /tmp /dev/null                      scratch for libraries.
+#   read_write /sandbox (include_workdir)          work folder.
+#   (absent)   /hackathon/restricted /hackathon/secrets   not on the allow list -> kernel (Landlock) denies with EACCES,
+#                                                  regardless of what the model is asked or decides.
+#   network    only the app's Python (/opt/kculture/python/**), one method + path (L7) per host:
+#     nim_chat         integrate.api.nvidia.com:443  POST /v1/chat/completions   Nemotron: request weight (heavy/light),
+#                                                    plan, research, answers (NVIDIA API catalog).
+#     vllm_chat        nemotron-ye5klfyey.gobrev.dev:443  POST /v1/chat/completions   the same model family served by
+#                                                    the team's own vLLM on a Brev GPU (Cloudflare tunnel). Key from
+#                                                    provider kculture-vllm (VLLM_API_KEY); the app picks it with
+#                                                    NIM_API_KEY_ENV=VLLM_API_KEY, NIM_BASE_URL and NIM_MODEL.
+#     github_issue     api.github.com:443            POST /repos/JoeHwangHee/kculture-course-publish/issues
+#                                                    approved file only: publish one course as an issue.
+#   Everything else is denied: other hosts (no web search, no mail, no booking, no model hub), other paths on these
+#   hosts, other executables (curl, shells), and the OpenShell gateway, so the agent cannot approve itself.
+#   The image has no openshell CLI either.
+# No keys here. Providers inject placeholders; the supervisor proxy swaps in the real credential only for requests
+# that pass this policy. PUBLISH_REPO in the sandbox must equal the repository in the github_issue path exactly.
+version: 1
+filesystem_policy:
+  include_workdir: true
+  read_only:
+  - /usr
+  - /lib
+  - /proc
+  - /dev/urandom
+  - /etc
+  - /opt/kculture
+  - /opt/models
+  - /hackathon/input
+  - /var/log
+  read_write:
+  - /hackathon/output
+  - /tmp
+  - /dev/null
+landlock:
+  compatibility: best_effort
+process:
+  run_as_user: sandbox
+  run_as_group: sandbox
+network_policies:
+  nim_chat:
+    name: nim-chat
+    endpoints:
+    - host: integrate.api.nvidia.com
+      port: 443
+      protocol: rest
+      enforcement: enforce
+      rules:
+      - allow:
+          method: POST
+          path: /v1/chat/completions
+    binaries:
+    - path: /opt/kculture/python/**
+  vllm_chat:
+    name: vllm-chat
+    endpoints:
+    - host: nemotron-ye5klfyey.gobrev.dev
+      port: 443
+      protocol: rest
+      enforcement: enforce
+      rules:
+      - allow:
+          method: POST
+          path: /v1/chat/completions
+    binaries:
+    - path: /opt/kculture/python/**

@@ -1,0 +1,79 @@
+{
+  "pack_id": "fx-byeolmuri",
+  "work_title": "별무리 수호단",
+  "aliases": ["별수단"],
+  "provenance": "synthetic",
+  "stations": [
+    {"name": "새벽솔", "aliases": ["새벽솔역"], "line": "가상1호선"},
+    {"name": "달무리나루", "aliases": ["달무리나루역"], "line": "가상1호선"},
+    {"name": "솔빛고개", "aliases": ["솔빛고개역"], "line": "가상2호선"}
+  ],
+  "places": [
+    {
+      "place_id": "fx-01",
+      "current_name": "달무리나루 선착장",
+      "in_work_name": "수호단 비밀 부두",
+      "scene": "1화 수호단이 처음 모이는 밤 부두 장면",
+      "old_names": ["달무리 나루터"],
+      "station": "달무리나루",
+      "stay_min": 30,
+      "appearance_source_ids": ["fx-src-appearance"],
+      "priority": 1
+    },
+    {
+      "place_id": "fx-02",
+      "current_name": "별가루 골목시장",
+      "in_work_name": "반짝 장터",
+      "scene": "3화 장터 골목 추격 장면",
+      "old_names": ["별가루장"],
+      "station": "새벽솔",
+      "stay_min": 30,
+      "appearance_source_ids": ["fx-src-appearance"],
+      "priority": 2
+    },
+    {
+      "place_id": "fx-03",
+      "current_name": "솔빛고개 전망쉼터",
+      "in_work_name": "수호단 망루",
+      "scene": "5화 결전 전날 밤 망루 장면",
+      "old_names": [],
+      "station": "솔빛고개",
+      "stay_min": 20,
+      "appearance_source_ids": ["fx-src-appearance"],
+      "priority": 3
+    },
+    {
+      "place_id": "fx-04",
+      "current_name": "새벽솔 약속정원",
+      "in_work_name": "약속의 정원",
+      "scene": "2화 두 주인공이 약속하는 정원 장면",
+      "old_names": ["새벽솔 들판"],
+      "station": "새벽솔",
+      "stay_min": 30,
+      "appearance_source_ids": ["fx-src-appearance"],
+      "priority": 3
+    },
+    {
+      "place_id": "fx-05",
+      "current_name": "바람끝곶 등대",
+      "in_work_name": "마지막 신호탑",
+      "scene": "12화 엔딩 신호탑 장면",
+      "old_names": ["바람끝곶 봉수대"],
+      "station": "솔빛고개",
+      "stay_min": 60,
+      "appearance_source_ids": ["fx-src-appearance"],
+      "priority": 4
+    },
+    {
+      "place_id": "fx-06",
+      "current_name": "구름안개 폭포마당",
+      "in_work_name": "수호단 수련터",
+      "scene": "8화 폭포 아래 수련 장면",
+      "old_names": [],
+      "station": "달무리나루",
+      "stay_min": 60,
+      "appearance_source_ids": ["fx-src-appearance"],
+      "priority": 5
+    }
+  ]
+}

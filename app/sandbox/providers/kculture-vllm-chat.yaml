@@ -1,0 +1,22 @@
+id: kculture-vllm-chat
+display_name: KCulture vLLM chat
+description: kculture-gpu(Brev)의 vLLM Nemotron OpenAI 호환 chat 엔드포인트. 키는 샌드박스 안에 자리표시 값으로만 들어가고, 정책을 통과한 요청에만 실제 값이 들어간다.
+category: inference
+credentials:
+- name: api_key
+  description: vLLM --api-key 값. 앱은 NIM_API_KEY_ENV=VLLM_API_KEY일 때 이 변수를 읽어 Bearer로 보낸다.
+  env_vars:
+  - VLLM_API_KEY
+  required: true
+  auth_style: bearer
+  header_name: authorization
+  query_param: ''
+endpoints:
+- host: nemotron-ye5klfyey.gobrev.dev
+  port: 443
+  protocol: rest
+  enforcement: enforce
+  rules:
+  - allow:
+      method: POST
+      path: /v1/chat/completions

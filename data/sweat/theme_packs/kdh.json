@@ -1,0 +1,166 @@
+{
+  "pack_id": "kdh",
+  "work_title": "케이팝 데몬 헌터스",
+  "aliases": [
+    "케데헌",
+    "KPop Demon Hunters"
+  ],
+  "provenance": "real",
+  "stations": [
+    {
+      "name": "혜화",
+      "aliases": [
+        "혜화역"
+      ],
+      "line": "4호선"
+    },
+    {
+      "name": "명동",
+      "aliases": [
+        "명동역"
+      ],
+      "line": "4호선"
+    },
+    {
+      "name": "안국",
+      "aliases": [
+        "안국역"
+      ],
+      "line": "3호선"
+    },
+    {
+      "name": "자양(뚝섬한강공원)",
+      "aliases": [
+        "자양역",
+        "자양(뚝섬한강공원)역",
+        "뚝섬유원지역",
+        "자양"
+      ],
+      "line": "7호선"
+    },
+    {
+      "name": "종합운동장",
+      "aliases": [
+        "종합운동장역"
+      ],
+      "line": "2호선·9호선"
+    }
+  ],
+  "places": [
+    {
+      "place_id": "naksan",
+      "current_name": "낙산공원",
+      "in_work_name": "",
+      "scene": "루미와 진우의 두 번째 비밀 만남. 헌트릭스 수상 계획을 논의하며 밤에 성곽길을 걷는 장면",
+      "old_names": [
+        "낙타산",
+        "타락산"
+      ],
+      "station": "혜화",
+      "stay_min": 40,
+      "appearance_source_ids": [
+        "S-KDH-07",
+        "S-KDH-01-appearance",
+        "S-KDH-04-appearance",
+        "S-KDH-06-appearance"
+      ],
+      "priority": 1
+    },
+    {
+      "place_id": "namsan",
+      "current_name": "N서울타워(남산서울타워)",
+      "in_work_name": "",
+      "scene": "N서울타워 아래 언덕의 가상 공연장에서 사자보이즈가 'Your Idol'을 공연하는 장면과 이어지는 결말부 무대",
+      "old_names": [
+        "목멱산",
+        "목밀산",
+        "인경산",
+        "열경산",
+        "종남산",
+        "마뫼"
+      ],
+      "station": "명동",
+      "stay_min": 60,
+      "appearance_source_ids": [
+        "S-KDH-07",
+        "S-KDH-02-appearance"
+      ],
+      "priority": 2
+    },
+    {
+      "place_id": "bukchon",
+      "current_name": "북촌한옥마을",
+      "in_work_name": "",
+      "scene": "루미와 진우가 처음 만나는 장면",
+      "old_names": [],
+      "station": "안국",
+      "stay_min": 40,
+      "appearance_source_ids": [
+        "S-KDH-07",
+        "S-KDH-02-appearance",
+        "S-KDH-01-appearance",
+        "S-KDH-06-appearance",
+        "S-KDH-05-appearance"
+      ],
+      "priority": 3
+    },
+    {
+      "place_id": "myeongdong",
+      "current_name": "명동",
+      "in_work_name": "",
+      "scene": "사자보이즈가 첫 무대('Soda Pop', 곡명은 언론 보도 기준)를 선보이는 거리 장면",
+      "old_names": [
+        "명례방",
+        "명례방골",
+        "종현",
+        "명례동",
+        "남촌",
+        "명치정"
+      ],
+      "station": "명동",
+      "stay_min": 40,
+      "appearance_source_ids": [
+        "S-KDH-07",
+        "S-KDH-01-appearance",
+        "S-KDH-06-appearance",
+        "S-KDH-02-appearance"
+      ],
+      "priority": 4
+    },
+    {
+      "place_id": "jayang",
+      "current_name": "자양(뚝섬한강공원)역",
+      "in_work_name": "섬유원지역",
+      "scene": "작품 속 '섬유원지역'으로 나오는 지하철역의 실제 배경으로 소개됨. 장면의 시점·내용은 확인하지 못함",
+      "old_names": [
+        "뚝섬유원지역"
+      ],
+      "station": "자양(뚝섬한강공원)",
+      "stay_min": 20,
+      "appearance_source_ids": [
+        "S-KDH-03",
+        "S-KDH-01-appearance",
+        "S-KDH-02-appearance"
+      ],
+      "priority": 5
+    },
+    {
+      "place_id": "olympic_stadium",
+      "current_name": "잠실종합운동장 올림픽주경기장",
+      "in_work_name": "",
+      "scene": "헌트릭스가 작품 속 해석의 서울올림픽주경기장으로 낙하해 무대를 펼치는 공연 장면(곡명은 확인 못 함)",
+      "old_names": [
+        "남서울운동장",
+        "서울종합경기장"
+      ],
+      "station": "종합운동장",
+      "stay_min": 30,
+      "appearance_source_ids": [
+        "S-KDH-07",
+        "S-KDH-02-appearance",
+        "S-KDH-01-appearance"
+      ],
+      "priority": 6
+    }
+  ]
+}
