@@ -664,7 +664,7 @@ details.log li b{color:var(--ink); font-weight:500}
       add(f, el('b', null, '실행 실패'));
       add(f, document.createTextNode(' — 계획·실행이 실패했거나 한도를 넘었습니다.'));
       if (arr(run.limits_hit).length) add(body, listBlock('넘은 한도', run.limits_hit));
-      else add(body, el('p', 'a-text', '지금 근거 자료는 케데헌·궁궐 테마 팩의 장소 12곳(낙산공원, 남산, 북촌, 명동, 자양, 올림픽주경기장, 창경궁, 창덕궁, 운현궁, 경복궁, 광화문, 덕수궁)과 서울 지하철 역명 유래입니다. 입력 폴더에 자료가 없을 때 이 범위 밖 장소만 물으면 장소 후보가 없어 코스를 만들지 못합니다. 작품 이름이나 위 장소로 다시 물어봐 주세요.'));
+      else add(body, el('p', 'a-text', '참고: 지금 다루는 범위는 케데헌·궁궐 테마 팩의 장소 12곳(낙산공원, 남산, 북촌, 명동, 자양, 올림픽주경기장, 창경궁, 창덕궁, 운현궁, 경복궁, 광화문, 덕수궁)과 서울 지하철 역명 유래입니다. 입력 폴더에 자료가 없을 때 이 범위 밖 장소만 물으면 장소 후보가 없어 코스를 만들지 못합니다. 작품 이름이나 위 장소로 다시 물어봐 주세요.'));
     }
 
     if (result.course && typeof result.course === 'object') renderCourse(result, result.course);

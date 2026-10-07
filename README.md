@@ -47,8 +47,8 @@ K-콘텐츠를 보고 온 방문객이 목표를 말하면, 에이전트가 배�
 | 구성요소 | 쓰임 | 빼면 사라지는 것 |
 |---|---|---|
 | OpenShell | 파일·네트워크·실행 파일 정책 강제, 자격 증명 주입, 감사 로그, 정책 이력 | `/hackathon/secrets`·`restricted` 차단이 모델의 거절에만 기대게 된다. 키를 샌드박스 안에 넣어야 하고, 게시를 사람이 정책으로 승인·회수하는 단계와 허용·거부 감사 로그가 없어진다 |
-| Nemotron(NIM) | 요청의 무게 판단, 계획, 이름 유래 요약, 구간 이동 시간 조사, 가벼운 질문의 답 | 요청을 읽고 도구 순서를 짜는 주체가 없어 고정 순서의 검색만 남는다. 작품 속 이름·옛 이름·현재 이름 정리와 가벼운 질문의 답이 없어진다 |
-| Brev(GPU 클라우드) | 팀 GPU에 Nemotron을 vLLM(고속 추론 서버)으로 띄움. 설정 세 값으로 NIM 대신 고른다(3절) | 기본 경로(NVIDIA API 카탈로그)로만 돈다. 없어지는 기능은 없다 |
+| Nemotron(NIM) | 요청의 무게 판단, 계획, 이름 유래 요약, 구간 이동 시간 조사, 가벼운 질문의 답 | 요청의 무게 판단부터 실패해 모든 요청이 "응답 불가"로 끝난다. 도구 계획, 작품 속 이름·옛 이름·현재 이름 정리, 가벼운 질문의 답이 없어진다 |
+| Brev(GPU 클라우드) | 팀 GPU에 띄운 vLLM(고속 추론 서버, 서빙 이름 `nemotron`). 설정 세 값으로 NIM 대신 고른다(3절) | 기본 경로(NVIDIA API 카탈로그)로만 돈다. 없어지는 기능은 없다 |
 
 ## 3. 설치와 실행(환경 설정)
 
@@ -163,7 +163,7 @@ openshell sandbox create --name kculture --from kculture-sandbox:<태그> --poli
 | 서비스 | 쓰임 | 허용 범위 | 자격 증명 |
 |---|---|---|---|
 | NVIDIA NIM(build.nvidia.com), `nvidia/nemotron-3-super-120b-a12b` | 무게 판단, 계획, 요약, 이동 시간 조사, 가벼운 답 | `POST /v1/chat/completions` | provider `tradesentry-nvidia` |
-| 팀의 vLLM(Brev GPU, Cloudflare 터널) `nemotron-ye5klfyey.gobrev.dev`, 모델 `nemotron` | 같은 쓰임(NIM 대신 고를 때). 2026-10-07 확인: 시연 문장 1회(run `20261007T075459Z-27fb`, 70초, 코스 2곳·게시 승인 대기), 가벼운 질문 1회(run `20261007T074558Z-3db8`) | `POST /v1/chat/completions` | provider `kculture-vllm`(프로필 `app/sandbox/providers/kculture-vllm-chat.yaml`, 변수 `VLLM_API_KEY`) |
+| 팀의 vLLM(Brev GPU, Cloudflare 터널) `nemotron-ye5klfyey.gobrev.dev`, 모델 `nemotron` | 같은 쓰임(NIM 대신 고를 때). 2026-10-07 확인: 시연 문장 1회(run `20261007T075459Z-27fb`, 70초, 코스 2곳·게시 승인 대기), 가벼운 질문 2회(run `20261007T074558Z-3db8` 명령줄, `20261007T075620Z-214c` 실시간 화면) | `POST /v1/chat/completions` | provider `kculture-vllm`(프로필 `app/sandbox/providers/kculture-vllm-chat.yaml`, 변수 `VLLM_API_KEY`) |
 | GitHub REST API | 승인된 코스 게시(전용 저장소 `JoeHwangHee/kculture-course-publish`의 이슈. 이 제출용 공개 저장소와 같은 저장소이고, 시연 게시가 이슈 #2다) | 승인 정책에서만 `POST /repos/JoeHwangHee/kculture-course-publish/issues` | provider `kculture-github`(그 저장소 이슈 쓰기만) |
 | 서울 열린데이터광장 OA-12036 | 역명 유래 자료 | 호스트에서 색인할 때 한 번 받음. 샌드박스 실행 중에는 부르지 않는다 | 없음 |
 | 서울 열린데이터광장 OA-12034, 서울시 「내 손안에 서울」 | 구간 이동 시간 자료(역간 표준 운행시간, 역~장소 도보 시간). 「내 손안에 서울」 자료는 공개 저장소에 넣지 않았다(4절) | 호스트에서 자료를 만들 때 한 번 조회. 샌드박스 실행 중에는 부르지 않는다 | 없음 |
@@ -223,4 +223,4 @@ openshell sandbox create --name kculture --from kculture-sandbox:<태그> --poli
 | `app/index/kb/` | 지식 색인(JSON) |
 | `app/web/` | 실시간 사용자 화면(호스트 로컬 서버, 127.0.0.1) |
 | `docs/guide/` | 심사자 가이드: 실행(`RUN.md`), 심사 기준별 확인(`CHECK.md`) |
-| `docs/`(그 밖) | 설계·운영 문서와 당일 기록(제출용 공개 저장소에는 넣지 않음) |
+| `docs/`(그 밖) | 설계·운영 문서, 트랙끼리의 계약, 결정 기록과 당일 기록(가이드가 근거로 가리키는 파일) |

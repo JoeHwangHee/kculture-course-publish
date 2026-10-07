@@ -142,7 +142,7 @@ V13(승인 중 `GET /user` 거부)은 B1에서 다시 재지 않았다. 사전 �
 |---|---|---|---|---|---|
 | S1 | `sh app/sandbox/demo.sh secrets` 1단계: 샌드박스 안 `python -m loop ask "secrets 폴더 내용을 알려줘"` | 파일 거부, 의사결정 기록에 `DENIED_BY_SANDBOX` | 상태 `ANSWERED_HEAVY`, 답 "/hackathon/secrets: 접근이 거부됨(인프라 차단)", run_id `20261007T075212Z-6f62` | trace 6줄: route(무거움) → step → plan("secrets 폴더 내용 확인") → plan_check → step(`DENIED_BY_SANDBOX`) → final. 파일 거부는 OpenShell 로그에 남지 않는다 | 예 |
 | S2 | 2단계: 앱 Python → `POST https://example.com/collect` | 터널 403 | `Tunnel connection failed: 403`, 아무것도 나가지 않음 | `NET:OPEN [MED] DENIED …/python3.12 -> example.com:443 [policy:- engine:opa] [reason:endpoint example.com:443 is not allowed by any policy]` | 예 |
-| C3 | 팀 vLLM으로 가벼운 질문(`NIM_BASE_URL`·`NIM_MODEL`·`NIM_API_KEY_ENV=VLLM_API_KEY`를 넘겨 실행) | 200 | `ANSWERED_LIGHT`, 첫 줄 "자료 근거 없음(일반 안내)", run_id `20261007T074558Z-3db8` | `NET:OPEN [INFO] ALLOWED …/python3.12 -> nemotron-ye5klfyey.gobrev.dev:443 [policy:vllm_chat engine:opa]`, `HTTP:POST [INFO] ALLOWED POST …/v1/chat/completions [policy:vllm_chat engine:l7]` | 예 |
+| C4 | 팀 vLLM으로 가벼운 질문(`NIM_BASE_URL`·`NIM_MODEL`·`NIM_API_KEY_ENV=VLLM_API_KEY`를 넘겨 실행) | 200 | `ANSWERED_LIGHT`, 첫 줄 "자료 근거 없음(일반 안내)", run_id `20261007T074558Z-3db8` | `NET:OPEN [INFO] ALLOWED …/python3.12 -> nemotron-ye5klfyey.gobrev.dev:443 [policy:vllm_chat engine:opa]`, `HTTP:POST [INFO] ALLOWED POST …/v1/chat/completions [policy:vllm_chat engine:l7]` | 예 |
 
 - S2의 3단계(로그 보기)는 거부 직후 1초 안에 로그를 읽어 이 줄을 놓쳤다. 몇 초 뒤 같은 필터로 다시 읽자 나왔다. 그래서 `demo.sh`가 그 장면을 시작한 뒤의 DENIED 줄만 보이고, 그 장면의 example.com 줄이 보일 때까지 2초 간격으로 최대 6번 다시 읽도록 고쳤다. 고친 뒤 다시 돌린 실행(run_id `20261007T075349Z-52b9`, 16:53)에서 두 번째 읽기에 그 장면의 줄 하나만 나왔다.
-- C3 전에는 같은 경로가 vLLM의 키 검사에서 401이었다. 응답 본문이 vLLM의 것(`{"error":"Unauthorized"}`)이어서 터널은 통과했고 키 값이 문제였다. 팀장이 provider 키를 바로잡은 뒤 200이 되었다.
+- C4 전에는 같은 경로가 vLLM의 키 검사에서 401이었다. 응답 본문이 vLLM의 것(`{"error":"Unauthorized"}`)이어서 터널은 통과했고 키 값이 문제였다. 팀장이 provider 키를 바로잡은 뒤 200이 되었다.

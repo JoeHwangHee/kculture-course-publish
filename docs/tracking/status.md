@@ -47,25 +47,25 @@
 | 16:1x | 사용자 화면 목업(질문 → 오른쪽 답변, 기록 재생 표시), README 확인 사실·결과표 | 비공개 링크(팀장), 커밋 `0f29bb5` |
 | 16:2x | 팀 vLLM(Brev) 연결 준비: provider 프로필, 정책 `vllm_chat`, 키 변수 허용 목록, User-Agent | 커밋 `aae2ba3`, 결정 기록 16:1x 줄 |
 | 16:3x | 심사자 실행 가이드 병합(`docs/guide/RUN.md`), 트랙 `web`·`checkguide` 최종 보고 받음(범위·비밀값 검사 통과) | 커밋 `8ed2bd9`, 트랙 작업기록 |
-| 16:4x | 팀 vLLM 401 해결(팀장이 provider 키를 바로잡음). 샌드박스 안에서 vLLM으로 가벼운 질문 1회 답(`ANSWERED_LIGHT`, run_id `20261007T074558Z-3db8`), OpenShell 로그에 `policy:vllm_chat` ALLOWED(OPA·L7) | OpenShell 로그 |
+| 16:4x | 팀 vLLM 401 해결(팀장이 provider 키를 바로잡음). 샌드박스 안에서 vLLM으로 가벼운 질문 1회 답(`ANSWERED_LIGHT`, run_id `20261007T074558Z-3db8`), OpenShell 로그에 `policy:vllm_chat` ALLOWED(OPA·L7) | `app/sandbox/violation_tests.md` C4 |
+| 16:5x | 실시간 화면 실제 왕복(팀 vLLM): 시연 문장 70초 `PUBLISH_PENDING_APPROVAL`(run `20261007T075459Z-27fb`), 가벼운 질문 4초(run `20261007T075620Z-214c`). 사용 화면 사진 15장. secrets 장면을 앱으로 실행(S1·S2)하다 시연 스크립트 로그 단계가 거부 줄을 놓치는 문제를 찾아 고침 | `app/sandbox/violation_tests.md` S1·S2, README 5절·8절 |
+| 17:0x | web·checkguide 병합, README 마무리(문제 줄 삭제, NVIDIA 구성요소 칸, 공개판 표기), 가이드 vLLM 상태 갱신, 화면 Enter 보내기·실행 실패 때 지원 범위 안내. 제출용 공개 저장소 `JoeHwangHee/kculture-course-publish`에 올림(언론 인용 90·「내 손안에 서울」 29건 제외, 색인 399/430). Hustler 전달 자료(기술 스택·흐름 그림·사진) | main `b05e26f`, 공개 저장소 `84d26f7`, 결정 기록 16:5x·17:0x 줄 |
 
 ## 하는 중
 
-- `web` 병합 준비: 시험 903 통과(web 50 포함). 실제 샌드박스 왕복과 사용 화면 사진을 따로 돌리는 중이다(vLLM으로 시연 문장 전체 흐름을 함께 잰다).
-- `checkguide` 병합 준비: vLLM 연결 이전 main을 보고 쓴 부분(5절, 정책 끝점, 줄 번호)과 `RUN.md`의 vLLM 설명을 지금 main으로 고치는 중이다.
-- 공개판 로컬 준비: 언론 인용 문서 90건(`source_type: media`)과 「내 손안에 서울」 도보 시간 5건을 빼고 색인을 다시 만드는 스크립트. 저장소 생성·push는 팀장 승인 뒤.
+- 병합 뒤 독립 검토(worker-reviewer, 범위 `76f290d..b05e26f`). 나온 것은 고쳐 main과 공개 저장소에 다시 올린다(결정 기록 17:0x 줄).
+- 실시간 화면 서버가 호스트 127.0.0.1:8787에서 main 판으로 떠 있다(팀 vLLM, 승인 대기 0초).
 
 ## 막힌 것
 
-- 제출 마감 시각을 아직 모른다(미션 기록 질문 4). 공개 저장소가 제출 자격이다.
+- 없음. 제출(Slack)은 팀장이 한다: 공개 저장소 주소, 실행 방법 `docs/guide/RUN.md`.
 - 오래된 샌드박스 `ts-scored`(Error)는 오늘 작업과 무관하다. 지우지 않았다.
 
 ## 다음
 
-1. [상위] `web`·`checkguide` 병합, README에서 실시간 화면·확인 가이드를 잇는다.
-2. [상위] secrets 장면을 앱으로 1회 실행해 run_id·거부 기록을 남긴다.
-3. [상위] 17:30 전 최종 커밋: 상태·README 마무리("쓰지 않는 서술" 검색), 증거 경로 정리.
-4. [팀장] 공개 저장소 이름과 생성·push 승인 → 상위가 준비한 묶음을 올린다. 그 뒤 Slack 제출(팀장).
+1. [팀장] Slack 제출, 17:30 발표(Hustler 자료 전달함).
+2. [상위] 독립 검토 결과 반영 → main·공개 저장소 다시 올림.
+3. [상위, 17:30 뒤] 작업 브랜치·worktree 정리, 공통 시험 입력 개수(실제 20, 기록 21) 메모.
 
 ## 줄일 순서 / 지킬 것
 

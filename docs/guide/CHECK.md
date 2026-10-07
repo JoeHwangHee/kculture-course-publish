@@ -142,9 +142,9 @@ B1에서 다시 재지 않은 것과 B1 밖에서 잰 것
   - `app/tools/tests/test_chain.py::test_secrets_scene_is_denied_by_sandbox`
   - `app/loop/tests/test_runner.py::test_read_denied_is_answered_heavy`
 - 커널이 실제로 막는다는 실측: V1~V3(`cat`/`ls` 프로브. V1 종료 1·Permission denied, V2 Permission denied(종료 코드는 B1 표에 없음), V3 종료 2·Permission denied) `[사실: violation_tests.md 116~118행]`.
-- 시연 명령: `sh app/sandbox/demo.sh secrets` `[문서만]`. 세 단계를 보인다: (1) 샌드박스 안 `python -m loop ask "secrets 폴더 내용을 알려줘"`, (2) 앱 Python이 비허용 주소 `https://example.com/collect`로 POST 시도, (3) 최근 2분 OpenShell 로그의 DENIED 줄 `[사실: app/sandbox/demo.sh 88~128행]`.
+- 시연 명령: `sh app/sandbox/demo.sh secrets` `[실행 기록: app/sandbox/violation_tests.md S1·S2]`. 세 단계를 보인다: (1) 샌드박스 안 `python -m loop ask "secrets 폴더 내용을 알려줘"`, (2) 앱 Python이 비허용 주소 `https://example.com/collect`로 POST 시도, (3) 그 장면이 시작된 뒤의 OpenShell 로그 DENIED 줄(그 장면의 example.com 줄이 보일 때까지 2초 간격으로 최대 6번 다시 읽음) `[사실: app/sandbox/demo.sh 88~136행]`.
 - 한계
-  - 샌드박스 안에서 앱이 secrets를 열어 trace에 `DENIED_BY_SANDBOX`가 남은 실행의 run_id나 그 trace는 저장소에 기록되어 있지 않다 `[미확인]`. README 5절 표에 장면 설명만 있다.
+  - 앱으로 돌린 실행: run `20261007T075212Z-6f62`. trace에 `step(DENIED_BY_SANDBOX)`가 남았고, 답은 "/hackathon/secrets: 접근이 거부됨(인프라 차단)"이다. example.com 전송 거부는 OpenShell 로그 `NET:OPEN [MED] DENIED … -> example.com:443`으로 남았다 `[실행 기록: app/sandbox/violation_tests.md S1·S2]`.
   - 파일 거부(Landlock)는 OpenShell 로그에 남지 않는다. trace의 `DENIED_BY_SANDBOX`로 확인한다 `[사실: README.md 11절, violation_tests.md 11행]`.
 
 ---
@@ -163,7 +163,7 @@ B1에서 다시 재지 않은 것과 B1 밖에서 잰 것
     - `policy-current.txt`: `openshell policy get kculture`(묶음을 만들 때 걸린 판)
     - `audit.md`: trace의 `publish_attempt`와 `api.github.com` ALLOWED/DENIED 줄을 한 UTC 시간축에 맞춘 표
   - 종료 코드 `[사실: audit.sh 14~15행]`: 0 = 묶음을 썼고 모든 게시 시도가 맞는 로그 판정과 짝지어짐, 1 = 묶음은 썼으나 짝 없는·어긋나는 시도가 있거나 내려받기·OpenShell 호출 실패, 2 = 사용법 오류 또는 묶음이 이미 있음.
-  - 같은 일: `sh app/sandbox/demo.sh audit <run_id>` `[사실: demo.sh 145행]`.
+  - 같은 일: `sh app/sandbox/demo.sh audit <run_id>` `[사실: demo.sh 153행]`.
 - 정책 이력: `openshell policy list kculture` `[실행 기록: app/sandbox/x1_evidence.md 44~51행]`
 - trace 해시 사슬 확인(저장소 루트에서, 감사 묶음을 만든 뒤) `[문서만]`
   ```
@@ -249,7 +249,7 @@ B1에서 다시 재지 않은 것과 B1 밖에서 잰 것
 
 ## 5. Deployment Flexibility
 
-**주장**: OpenShell은 허용 목록 방식이라 처음에는 아무것도 열려 있지 않다. 필요한 길을 하나씩 열고 닫은 기록이 정책 이력과 결정 기록에 남아 있다. 모델 엔드포인트는 환경변수 셋과 정책 블록으로 바꾼다. 기본은 NVIDIA API 카탈로그이고, 팀이 Brev(GPU 클라우드)에 띄운 vLLM(OpenAI 호환 추론 서버)을 고를 수 있다. 바꾸는 코드는 단위 시험으로 확인했고, vLLM이 실제로 답한 실행은 아직 없다.
+**주장**: OpenShell은 허용 목록 방식이라 처음에는 아무것도 열려 있지 않다. 필요한 길을 하나씩 열고 닫은 기록이 정책 이력과 결정 기록에 남아 있다. 모델 엔드포인트는 환경변수 셋과 정책 블록으로 바꾼다. 기본은 NVIDIA API 카탈로그이고, 팀이 Brev(GPU 클라우드)에 띄운 vLLM(OpenAI 호환 추론 서버)을 고를 수 있다. 바꾸는 코드는 단위 시험으로 확인했고, 실제 호출(시연 문장 1회, 가벼운 질문 2회)로도 확인했다.
 
 **연 순서(시간순, 2026-10-07)**
 
@@ -275,7 +275,7 @@ B1에서 다시 재지 않은 것과 B1 밖에서 잰 것
   - `NIM_API_KEY_ENV`: 키가 든 환경변수의 이름. 기본 `NVIDIA_API_KEY`. 허용 목록은 `NVIDIA_API_KEY`·`VLLM_API_KEY` 둘이고(35행), 그 밖의 이름은 ConfigError다(147~149행). 고른 변수가 없거나 비어 있어도 ConfigError다(150~152행). 샌드박스 안에서는 어느 변수든 자리표시 값이고, 실제 키는 정책을 통과한 요청에만 프록시가 넣는다(4~7행 주석).
   - 루프는 `NimClient.from_env`로 이 셋을 읽는다(`app/loop/nemotron.py` 57행). 계약에도 같은 셋이 적혀 있다 `[사실: docs/contracts.md 설계 4.9]`.
   - 모든 요청에 User-Agent(요청을 보낸 프로그램 이름 헤더) `kculture-agent/1.0`을 싣는다(38·168행). Cloudflare(웹 앞단 프록시 서비스)를 앞에 둔 엔드포인트(팀의 Brev vLLM 터널)가 urllib 기본 User-Agent를 오류 1010으로 거부했기 때문이다(36~37행 주석. 2026-10-07에 쟀다고 적혀 있다).
-- 샌드박스로 넘기기: `demo.sh`는 호스트에 설정된 `NIM_BASE_URL`·`NIM_MODEL`·`NIM_API_KEY_ENV`를 `--env`로 넘긴다. 설정하지 않은 값은 넘기지 않는다. 값에 공백·따옴표·glob 문자(파일 이름 패턴 문자 `*`, `?`, `[`)·`$`·백틱이 있으면 종료 2로 거부한다 `[사실: app/sandbox/demo.sh 41~49행(거부 47행), 넘기는 곳 56~58행(course)·92~93행(secrets)]`. demo.sh는 위험한 문자만 거르고, 키 변수 이름의 허용 목록은 샌드박스 안의 앱이 검사한다(위 `NIM_API_KEY_ENV`).
+- 샌드박스로 넘기기: `demo.sh`는 호스트에 설정된 `NIM_BASE_URL`·`NIM_MODEL`·`NIM_API_KEY_ENV`를 `--env`로 넘긴다. 설정하지 않은 값은 넘기지 않는다. 값에 공백·따옴표·glob 문자(파일 이름 패턴 문자 `*`, `?`, `[`)·`$`·백틱이 있으면 종료 2로 거부한다 `[사실: app/sandbox/demo.sh 41~49행(거부 47행), 넘기는 곳 56~58행(course)·93~94행(secrets)]`. demo.sh는 위험한 문자만 거르고, 키 변수 이름의 허용 목록은 샌드박스 안의 앱이 검사한다(위 `NIM_API_KEY_ENV`).
 - provider 프로필: `app/sandbox/providers/kculture-vllm-chat.yaml`(id `kculture-vllm-chat`, 자격 증명 변수 `VLLM_API_KEY`, bearer 방식, 끝점 `nemotron-ye5klfyey.gobrev.dev:443` `POST /v1/chat/completions`) `[사실: 그 파일]`. 이 프로필을 가져와 provider `kculture-vllm`을 만들고, 샌드박스를 만들 때 `--provider kculture-vllm`을 더하고, 세 환경변수를 주고 `demo.sh course`를 부르는 순서는 README 3절 "선택: 팀의 vLLM으로 모델 바꾸기"에 있다 `[문서만]`.
 - 정책: 두 정책 파일 모두 `vllm_chat` 블록을 갖는다. 호스트 `nemotron-ye5klfyey.gobrev.dev`, 포트 443, `protocol: rest`, `enforcement: enforce`, `POST /v1/chat/completions`만, 실행 파일 `/opt/kculture/python/**`만 `[사실: app/sandbox/policy.yaml 75~87행, app/sandbox/policy-publish-approved.yaml 75~87행, 머리 주석 28~31행]`. 다른 엔드포인트로 바꾸려면 같은 꼴의 블록을 두 파일에 함께 더한다. 네트워크 블록은 동적 계층이라 `openshell policy set`으로 실행 중에 바꿀 수 있다 `[추론: docs/engineering-notes.md 3절 "정책 계층마다 바꾸는 법이 다르다"]`.
 
@@ -287,12 +287,12 @@ B1에서 다시 재지 않은 것과 B1 밖에서 잰 것
   - `app/agent/tests/test_agent_nim_client.py::test_from_env_switched_key_variable_missing_is_config_error`(바꾼 변수가 없으면 기본 변수로 돌아가지 않고 ConfigError)
   - `app/agent/tests/test_agent_nim_client.py::test_from_env_bad_key_variable_name_is_config_error`(허용 목록 밖 이름 8가지)
   - `app/agent/tests/test_agent_nim_client.py::test_requests_carry_a_named_user_agent`
-- 실제 vLLM 호출: 처음에는 vLLM의 키 검사에서 HTTP 401이었다(응답 본문이 vLLM의 것이라 터널은 통과). 팀장이 provider 키를 바로잡은 뒤 가벼운 질문(run `20261007T074558Z-3db8`, `ANSWERED_LIGHT`)과 시연 문장(run `20261007T075459Z-27fb`, 실시간 화면 경유, 70초, 코스 2곳·`PUBLISH_PENDING_APPROVAL`)이 vLLM으로 끝까지 돌았다. OpenShell 로그에 `policy:vllm_chat` ALLOWED(OPA·L7) 줄이 남았다 `[실행 기록: app/sandbox/violation_tests.md C3, README 8절]`.
+- 실제 vLLM 호출: 처음에는 vLLM의 키 검사에서 HTTP 401이었다(응답 본문이 vLLM의 것이라 터널은 통과). 팀장이 provider 키를 바로잡은 뒤 가벼운 질문 2회(run `20261007T074558Z-3db8` 명령줄, `20261007T075620Z-214c` 실시간 화면, 둘 다 `ANSWERED_LIGHT`)와 시연 문장(run `20261007T075459Z-27fb`, 실시간 화면 경유, 70초, 코스 2곳·`PUBLISH_PENDING_APPROVAL`)이 vLLM으로 끝까지 돌았다. OpenShell 로그에 `policy:vllm_chat` ALLOWED(OPA·L7) 줄이 남았다 `[실행 기록: app/sandbox/violation_tests.md C4, README 8절]`.
 - 결과표(7절)의 수치는 모두 NVIDIA API 카탈로그 모델 `nvidia/nemotron-3-super-120b-a12b`로 잰 값이다 `[사실: README.md 9절]`. vLLM 연결(16:1x)은 기능 동결(15:5x) 뒤에 더한 것이다 `[사실: 결정 기록 15:5x·16:1x 줄]`.
 - 결정 기록의 두 줄: 14:3x 줄은 "NIM은 Brev에 띄운 것을 쓴다(주소·모델·키 여부는 팀장이 확인, 그 전까지는 지금 NIM 주소)"이고, 16:1x 줄은 "팀의 Brev vLLM도 쓸 수 있게 한다"이다. 지금 코드의 기본값은 그대로 NVIDIA API 카탈로그이고, vLLM은 환경변수로 고르는 길이다 `[사실: app/agent/nim_client.py 39~40행, docs/contracts.md 설계 4.9]`. 16:1x 줄이 14:3x 줄을 대신하는지는 기록에 없다 `[미확인]`.
 
 **한계**
-- vLLM으로는 시연 문장 1회와 가벼운 질문 1회만 돌렸다. 평가 사례(7절 결과표)는 vLLM으로 돌리지 않았다.
+- vLLM으로는 시연 문장 1회와 가벼운 질문 2회만 돌렸다. 평가 사례(7절 결과표)는 vLLM으로 돌리지 않았다.
 - `vllm_chat` 블록을 막는 쪽 위반 시험(다른 실행 파일, 다른 경로)은 기록이 없다 `[미확인]`(1.2절).
 - demo.sh의 값 넘기기와 거부를 확인하는 시험은 저장소에 없다 `[추론: app 아래 시험 파일에서 demo.sh를 찾지 못함]`.
 - 새 엔드포인트가 443/TLS가 아니면 정책 블록 모양이 달라질 수 있다 `[추론]`.
